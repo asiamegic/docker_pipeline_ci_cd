@@ -9,7 +9,7 @@ the task is to create an application image at the CI stage, save it in the Azure
 This is how the structure of the project deployment stages looks like
 
 <hr>
-In order to create a docker container, first of all we need to write a DOCKERFILE in which is a template according to which an image with the most necessary will be created. in the future, this image can be used many times for convenience in our project, I will use the azure container repository.
+<b>In order to create a docker container, first of all we need to write a DOCKERFILE in which is a template according to which an image with the most necessary will be created. in the future, this image can be used many times for convenience in our project, I will use the azure container repository.</b>
 
 ![image](https://user-images.githubusercontent.com/85096533/163694993-257886f6-5e44-483c-afca-3e4b71a6cdc8.png)
 
@@ -24,19 +24,20 @@ In this project we will manage the code of our application using one of the most
 
 
 
-<hr>
 
-Sample, an example of what a group of variables looks like that can be loaded into projects
+
+<b>Sample, an example of what a group of variables looks like that can be loaded into projects </b> <br><br>
+
 ![2](https://user-images.githubusercontent.com/85096533/163695213-f946659f-bbce-43f6-ab43-79b790f8ae02.jpg)
-<hr>
-
-An example of what the working environment looks like, the advantage is that virtual machines can be easily loaded into it, with just one command. And in the future, projects can be deployed on these machines, which is very convenient as well as managing process confirmation (a kind of trigger)
+<hr><br>
+<b>
+An example of what the working environment looks like, the advantage is that virtual machines can be easily loaded into it, with just one command. And in the future, projects can be deployed on these machines, which is very convenient as well as managing process confirmation (a kind of trigger) </b> <br>
 
 ![3](https://user-images.githubusercontent.com/85096533/163695253-37f6c919-ffbe-4c9b-b89d-0aececca5d36.jpg)
 
 <hr>
-
-Useful docker commands that will always come in handy:
+<b>
+Useful docker commands that will always come in handy:</b>
 
 
 after installation first steps
@@ -62,10 +63,10 @@ after installation first steps
   
   <hr>
   
-  you can also see my previous project on building SI DI pipeline azure devops, by the link
+  you can also see my previous project on building CI/CD pipeline azure devops, by the link
   https://github.com/asiamegic/azure_devops_pipeline
 
 <br><br>
-Good luck! I was glad to see you here ;)
+<b>Good luck! I was glad to see you here ;)  </b>
 
 
