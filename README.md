@@ -5,6 +5,8 @@
 * <b>Briefly about the project: </b> <br>
 the task is to create an application image at the CI stage, save it in the Azure container repository and at the CD stage deploy the container into two environments, staging and production using environment groups. groups of variables were also used in the project for convenience and automation
 
+The infrastructure of this project is written in YML in the azure-pipelines-docker.yml file without using the interface, that is, you can import the project into your Azure devops and adapt it for yourself
+
 ![image](https://user-images.githubusercontent.com/85096533/163695009-18cc301d-7542-4ee8-ae8f-cf7dffd3f17b.png)
 This is how the structure of the project deployment stages looks like
 
