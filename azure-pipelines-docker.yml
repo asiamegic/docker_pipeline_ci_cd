@@ -35,25 +35,7 @@ stages:
         script: 'sudo apt-get install sshpass'
     - bash: |
         sudo chmod 666 /var/run/docker.sock
-        echo "# Host configuration
-        PORT=8080
-        HOST=0.0.0.0
-        #Postgres configuration
-        PGHOST=staging-kf-postgres-flex-server.postgres.database.azure.com
-        PGUSERNAME=postgres
-        PGDATABASE=postgres
-        PGPASSWORD=postgres
-        PGPORT=5432
-
-        HOST_URL=http://20.228.173.82:8080/
-        COOKIE_ENCRYPT_PWD=superAwesomePasswordStringThatIsAtLeast32CharactersLong!
-        NODE_ENV=development
-
-        # Okta configuration
-        OKTA_ORG_URL=https://dev-87322128.okta.com
-        OKTA_CLIENT_ID=0oa42d8cu6HHVngpE5d7
-        OKTA_CLIENT_SECRET=1AUbkJbdFajJrSHiarR8GiA_iXhyVOxDruIAw__B" > ./.env
-      displayName: Creating staging .env
+        
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
