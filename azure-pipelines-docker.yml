@@ -1,0 +1,177 @@
+
+trigger:
+- master
+- feature/*
+
+resources:
+- repo: self
+
+variables:
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: 'c4517051-90b6-48eb-8838-bbad4c62bd9d'
+  imageRepository: 'artemimage'
+  containerRegistry: 'artemrafikov.azurecr.io'
+  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
+  tag: 'latest'
+
+
+  vmImageName: 'ubuntu-latest'
+
+stages:
+
+- stage: CI_build_image_staging
+  variables:
+  - group: var-staging
+  displayName: Build and push
+  pool:
+    name: my-pool
+  jobs:
+  - job: Build
+    displayName: Build and Push
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: 'sudo apt-get install sshpass'
+    - bash: |
+        sudo chmod 666 /var/run/docker.sock
+        echo "# Host configuration
+        PORT=8080
+        HOST=0.0.0.0
+        #Postgres configuration
+        PGHOST=staging-kf-postgres-flex-server.postgres.database.azure.com
+        PGUSERNAME=postgres
+        PGDATABASE=postgres
+        PGPASSWORD=postgres
+        PGPORT=5432
+
+        HOST_URL=http://20.228.173.82:8080/
+        COOKIE_ENCRYPT_PWD=superAwesomePasswordStringThatIsAtLeast32CharactersLong!
+        NODE_ENV=development
+
+        # Okta configuration
+        OKTA_ORG_URL=https://dev-87322128.okta.com
+        OKTA_CLIENT_ID=0oa42d8cu6HHVngpE5d7
+        OKTA_CLIENT_SECRET=1AUbkJbdFajJrSHiarR8GiA_iXhyVOxDruIAw__B" > ./.env
+      displayName: Creating staging .env
+    - task: Docker@2
+      displayName: Build and push an image to container registry
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          Staging
+          
+
+
+
+- stage: CD_staging
+  variables:
+  - group: var-staging
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  displayName: CD staging pull docker image from ACR
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      name: stage-pool
+
+    steps:
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'Azure Pass - Sponsorship(ee9699ca-a8f8-4329-94ef-50c93be9524e)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az --version
+          az account show
+    
+    - task: CmdLine@2
+      displayName: Stop Current Container
+      inputs:
+        script: 'docker rm -f  weighttracker || true'
+      
+    - task: Docker@2
+      displayName: 'Login to Registry'
+      inputs:
+              containerRegistry: $(dockerRegistryServiceConnection)
+              command: 'login'
+    
+ 
+    - task: Bash@3
+      displayName:  kill dock ps
+      inputs:
+        targetType: 'inline'
+        script: |
+          if  [ $( docker ps -aq | wc -w ) -gt 0 ]; then
+                   docker rm -f $(docker ps -aq)
+                   docker rmi $(docker images -q)
+                  fi
+    - task: CmdLine@2
+      inputs:
+        script: 'docker pull artemrafikov.azurecr.io/artemimage:Staging'
+    
+
+    - task: Bash@3
+      displayName:  Run Container
+      inputs:
+        targetType: 'inline'
+        script: 'docker run -d -p 8080:8080 -e PGHOST=$(bd_host) -e PORT=8080    -e  HOST=0.0.0.0  -e PGUSERNAME=postgres  -e PGDATABASE=postgres   -e  PGPASSWORD=$(bd_pass)  -e  PGPORT=5432   -e HOST_URLL=HOST_URL=http://$(host_ip_public):8080   -e COOKIE_ENCRYPT_PWD=superAwesomePasswordStringThatIsAtLeast32CharactersLong!   -e  NODE_ENV=development   -e  OKTA_ORG_URL=https://dev-87322128.okta.com   -e  OKTA_CLIENT_ID=$(okta_id)   -e OKTA_CLIENT_SECRET=$(okta_secret) artemrafikov.azurecr.io/artemimage:latest'
+
+
+
+
+- stage: cd_production
+  variables:
+  - group: var-production
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  displayName: CD staging pull docker image from ACR
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      name: prod-pool
+
+    steps:
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'Azure Pass - Sponsorship(ee9699ca-a8f8-4329-94ef-50c93be9524e)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az --version
+          az account show
+    
+    - task: CmdLine@2
+      displayName: Stop Current Container
+      inputs:
+        script: 'docker rm -f  weighttracker || true'
+      
+    - task: Docker@2
+      displayName: 'Login to Registry'
+      inputs:
+              containerRegistry: $(dockerRegistryServiceConnection)
+              command: 'login'
+    
+ 
+    - task: Bash@3
+      displayName:  kill dock ps
+      inputs:
+        targetType: 'inline'
+        script: |
+          if  [ $( docker ps -aq | wc -w ) -gt 0 ]; then
+                   docker rm -f $(docker ps -aq)
+                   docker rmi $(docker images -q)
+                  fi
+    - task: CmdLine@2
+      inputs:
+        script: 'docker pull artemrafikov.azurecr.io/artemimage:Staging'
+    
+
+    - task: Bash@3
+      displayName:  Run Container
+      inputs:
+        targetType: 'inline'
+        script: 'docker run -d -p 8080:8080 -e PGHOST=$(bd_host) -e PORT=8080    -e  HOST=0.0.0.0  -e PGUSERNAME=postgres  -e PGDATABASE=postgres   -e  PGPASSWORD=$(bd_pass)  -e  PGPORT=5432   -e HOST_URLL=HOST_URL=http://$(host_ip_public):8080   -e COOKIE_ENCRYPT_PWD=superAwesomePasswordStringThatIsAtLeast32CharactersLong!   -e  NODE_ENV=development   -e  OKTA_ORG_URL=https://dev-87322128.okta.com   -e  OKTA_CLIENT_ID=$(okta_id)   -e OKTA_CLIENT_SECRET=$(okta_secret) artemrafikov.azurecr.io/artemimage:latest'       
